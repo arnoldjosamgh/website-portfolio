@@ -33,15 +33,16 @@ A modern, responsive e-commerce website for a premium fashion brand. Built with 
     ```
 5.  **View Website**: Open `http://localhost:3000` in your browser.
 
-## Hosting (Render)
+## Hosting (Glitch)
 
-This project is configured for free hosting on [Render](https://render.com).
+This project works great on **Glitch**, which supports the database files (CSV) and Node.js for free.
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/arnoldjosamgh/website-portfolio)
-
-1.  Click the button above.
-2.  Sign in with GitHub.
-3.  Click "Create Web Service".
+1.  Go to [glitch.com](https://glitch.com).
+2.  Click **"New Project"** -> **"Import from GitHub"**.
+3.  Paste the URL of this repository:
+    `https://github.com/arnoldjosamgh/website-portfolio`
+4.  Glitch will install and run the server automatically.
+5.  Click **"Share"** -> **"Live Site"** to get your link!
 
 ## Admin Access
 - **URL**: `/admin.html`
