@@ -2,7 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const DB_DIR = path.join(__dirname, 'database');
 const EMAILS_FILE = path.join(DB_DIR, 'emails.csv');
 const INVENTORY_FILE = path.join(DB_DIR, 'inventory.csv');
