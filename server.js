@@ -137,51 +137,55 @@ const server = http.createServer((req, res) => {
 
     fs.readFile(filePath, (error, content) => {
         if (error) {
-            res.writeHead(500);
-            res.end('500 Internal Server Error: ' + error.code);
+            if (error.code === 'ENOENT') {
+                res.writeHead(404);
+                res.end('404 File Not Found');
+            } else {
+                res.writeHead(500);
+                res.end('500 Internal Server Error: ' + error.code);
+            }
+        } else {
+            res.writeHead(200, { 'Content-Type': contentType });
+            res.end(content, 'utf-8');
         }
-    } else {
-        res.writeHead(200, { 'Content-Type': contentType });
-        res.end(content, 'utf-8');
-    }
     });
 
-// API: Admin Stats
-if (req.url === '/api/admin/stats' && req.method === 'GET') {
-    try {
-        if (!fs.existsSync(EMAILS_FILE)) {
+    // API: Admin Stats
+    if (req.url === '/api/admin/stats' && req.method === 'GET') {
+        try {
+            if (!fs.existsSync(EMAILS_FILE)) {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true, userCount: 0, orderCount: 0, users: [] }));
+                return;
+            }
+
+            const content = fs.readFileSync(EMAILS_FILE, 'utf8');
+            const lines = content.trim().split('\n');
+            const users = lines.map(line => {
+                const parts = line.split(',');
+                // Format: email, password, name, date
+                return {
+                    email: parts[0],
+                    name: parts[2] || 'User',
+                    date: parts[3] || new Date().toISOString()
+                };
+            }).reverse().slice(0, 10); // Last 10 users
+
             res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: true, userCount: 0, orderCount: 0, users: [] }));
-            return;
+            res.end(JSON.stringify({
+                success: true,
+                userCount: lines.length,
+                orderCount: 0, // Mock, as we don't save orders to file yet in this demo
+                users: users
+            }));
+
+        } catch (err) {
+            console.error(err);
+            res.writeHead(500);
+            res.end(JSON.stringify({ error: 'Server Error' }));
         }
-
-        const content = fs.readFileSync(EMAILS_FILE, 'utf8');
-        const lines = content.trim().split('\n');
-        const users = lines.map(line => {
-            const parts = line.split(',');
-            // Format: email, password, name, date
-            return {
-                email: parts[0],
-                name: parts[2] || 'User',
-                date: parts[3] || new Date().toISOString()
-            };
-        }).reverse().slice(0, 10); // Last 10 users
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-            success: true,
-            userCount: lines.length,
-            orderCount: 0, // Mock, as we don't save orders to file yet in this demo
-            users: users
-        }));
-
-    } catch (err) {
-        console.error(err);
-        res.writeHead(500);
-        res.end(JSON.stringify({ error: 'Server Error' }));
+        return;
     }
-    return;
-}
 
 });
 
