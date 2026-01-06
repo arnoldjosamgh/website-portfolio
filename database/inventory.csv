@@ -1,0 +1,6 @@
+ProductID,ProductName,Category,Price,StockQuantity,Status
+1,Silk Emerald Gown,Women,12500,5,In Stock
+2,Royal Blue Cocktail,Women,8900,0,Out of Stock
+3,Crimson Velvet Blazer,Women,9500,10,In Stock
+5,Midnight Tuxedo,Men,18000,3,In Stock
+7,Oxford Leather Shoe,Men,7500,8,In Stock

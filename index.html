@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LuxeCurve | Premium Fashion Kenya</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Favicon -->
+    <link rel="icon" href="resources/logo1.png" type="image/png">
+</head>
+
+<body>
+
+    <!-- Notification / Toast -->
+    <div id="toast" class="toast hidden">Item added to cart</div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <img src="resources/logo.png" alt="LuxeCurve Logo" style="height: 60px; margin-right: 10px;">
+                <!-- LUXECURVE (Removed text if logo has text, or keep if adjacent. User image seems to have text. Let's keep text hidden or minimal if image is full logo) -->
+            </div>
+            <div class="nav-links">
+                <button class="nav-btn" onclick="app.navigate('home')">Home</button>
+                <button class="nav-btn" onclick="app.navigate('shop-men')">Men</button>
+                <button class="nav-btn" onclick="app.navigate('shop-women')">Women</button>
+            </div>
+            <div class="nav-actions">
+                <button class="icon-btn" onclick="app.navigate('login')"><i class="fa-regular fa-user"></i></button>
+                <div class="cart-icon-wrapper" onclick="app.toggleCart()">
+                    <button class="icon-btn"><i class="fa-solid fa-bag-shopping"></i></button>
+                    <span id="cart-count" class="cart-badge">0</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT AREA -->
+    <main id="main-content">
+
+        <!-- HERO SECTION -->
+        <section id="home" class="view hidden">
+            <div class="hero-split">
+                <div class="hero-side female-side" onclick="app.enterRetail('shop-women')">
+                    <div class="overlay"></div>
+                    <div class="content">
+                        <h2>For Her</h2>
+                        <button class="btn btn-primary btn-xl">Shop Women</button>
+                    </div>
+                </div>
+                <div class="hero-side male-side" onclick="app.enterRetail('shop-men')">
+                    <div class="overlay"></div>
+                    <div class="content">
+                        <h2>For Him</h2>
+                        <button class="btn btn-primary btn-xl">Shop Men</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WHOLESALE BANNER -->
+            <div id="wholesale-banner" class="wholesale-banner" onclick="app.enableWholesale()">
+                <canvas id="wholesale-canvas"></canvas>
+                <div class="ws-content">
+                    <h2>wholesale store</h2>
+                    <p>Get 5% OFF on all items • Minimum Order: 5 Items</p>
+                    <button class="btn btn-gold">Enter Wholesale Mode</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PRODUCT GRID SECTION -->
+        <section id="shop" class="view hidden">
+            <div class="container">
+                <div class="section-header">
+                    <h2 id="shop-title">Collection</h2>
+                    <button class="btn-text" onclick="app.navigate('home')">← Back to Home</button>
+                </div>
+
+                <!-- Filters -->
+                <div class="filter-bar">
+                    <button class="filter-btn active" onclick="app.filterBy('all')">All</button>
+                    <button class="filter-btn" onclick="app.filterBy('shirts')">Shirts</button>
+                    <button class="filter-btn" onclick="app.filterBy('pants')">Pants</button>
+                    <button class="filter-btn" onclick="app.filterBy('shoes')">Shoes</button>
+                </div>
+
+                <!-- Product Grid -->
+                <div id="product-grid" class="product-grid"></div>
+
+                <!-- Pagination -->
+                <div id="pagination" class="pagination-container"></div>
+            </div>
+        </section>
+
+        <!-- CHECKOUT SECTION (Revamped - Split View) -->
+        <section id="checkout" class="view hidden">
+            <div class="checkout-hero-container">
+                <!-- Left Side: Image -->
+                <div class="checkout-image-side">
+                    <div class="login-overlay"></div>
+                    <div class="login-brand-text">
+                        <h2>Secure Checkout</h2>
+                        <p>Complete Your Collection.</p>
+                    </div>
+                </div>
+
+                <!-- Right Side: Content -->
+                <div class="checkout-content-side">
+                    <div class="glass-auth-card checkout-glass-card">
+                        <div class="checkout-header-simple">
+                            <button class="btn-text-luxe" onclick="app.navigate('shop')">← Continue Shopping</button>
+                            <h3>Order Details</h3>
+                        </div>
+
+                        <!-- Order Summary -->
+                        <div class="order-summary-compact">
+                            <div id="checkout-items" class="checkout-items-scroll-compact"></div>
+                            <div class="total-row-luxe emerald-theme-text">
+                                <span>Total</span>
+                                <span id="checkout-total">KES 0</span>
+                            </div>
+                        </div>
+
+                        <div class="divider-luxe"></div>
+
+                        <!-- Payment Form -->
+                        <form id="payment-form" onsubmit="payments.handlePayment(event)">
+                            <h4 class="form-section-title">Payment Method</h4>
+
+                            <div class="payment-methods-luxe">
+                                <div class="method-card-luxe active" onclick="payments.selectMethod('mpesa')"
+                                    id="pm-mpesa">
+                                    <div class="method-icon"><i class="fa-solid fa-mobile-screen"></i></div>
+                                    <span>M-PESA</span>
+                                </div>
+                                <div class="method-card-luxe" onclick="payments.selectMethod('card')" id="pm-card">
+                                    <div class="method-icon"><i class="fa-brands fa-cc-visa"></i></div>
+                                    <span>Card</span>
+                                </div>
+                            </div>
+
+                            <div id="mpesa-fields" class="payment-fields">
+                                <div class="input-group-luxe emerald-theme">
+                                    <input type="tel" id="mpesa-number" placeholder=" " required>
+                                    <label>M-Pesa Phone Number</label>
+                                    <i class="fa-solid fa-phone input-icon"></i>
+                                </div>
+                                <p class="help-text-luxe">Unlock phone to receive prompt.</p>
+                            </div>
+
+                            <div id="card-fields" class="payment-fields hidden">
+                                <div class="input-group-luxe emerald-theme">
+                                    <input type="text" placeholder=" " id="card-number">
+                                    <label>Card Number</label>
+                                    <i class="fa-regular fa-credit-card input-icon"></i>
+                                </div>
+                                <div class="row-luxe">
+                                    <div class="input-group-luxe emerald-theme">
+                                        <input type="text" placeholder=" " id="card-expiry">
+                                        <label>MM/YY</label>
+                                    </div>
+                                    <div class="input-group-luxe emerald-theme">
+                                        <input type="text" placeholder=" " id="card-cvc">
+                                        <label>CVC</label>
+                                        <i class="fa-solid fa-lock input-icon"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-luxe-primary btn-emerald">
+                                <i class="fa-solid fa-lock"></i> Pay <span id="pay-btn-amount">KES 0</span>
+                            </button>
+                            <p class="secure-badge text-center"
+                                style="margin-top: 15px; font-size: 0.8rem; color: #888;">
+                                <i class="fa-solid fa-shield-halved"></i> Secured by 256-Bit SSL
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FEATURES ICONS SECTION -->
+    <section id="features" class="view active" style="padding: 60px 20px; background: #fff;">
+        <div class="features-grid">
+            <div class="feature-item auth-card" style="padding: 20px;">
+                <i class="fa-solid fa-truck-fast feature-icon"></i>
+                <h3>Global Delivery</h3>
+                <p>Fast shipping to key cities worldwide.</p>
+            </div>
+            <div class="feature-item auth-card" style="padding: 20px;">
+                <i class="fa-regular fa-gem feature-icon"></i>
+                <h3>Premium Quality</h3>
+                <p>Sourced from the finest materials.</p>
+            </div>
+            <div class="feature-item auth-card" style="padding: 20px;">
+                <i class="fa-solid fa-headset feature-icon"></i>
+                <h3>24/7 Support</h3>
+                <p>Dedicated concierge service.</p>
+            </div>
+            <div class="feature-item auth-card" style="padding: 20px;">
+                <i class="fa-solid fa-lock feature-icon"></i>
+                <h3>Secure Payment</h3>
+                <p>100% secure checkout via Visa & M-Pesa.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="social-links">
+            <a href="#"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#"><i class="fa-brands fa-tiktok"></i></a>
+            <a href="#"><i class="fa-brands fa-twitter"></i></a>
+            <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+        </div>
+        <p>&copy; 2026 LuxeCurve Fashion House. Kenya.</p>
+    </footer>
+
+    <!-- AUTH: LOGIN SECTION (Revamped) -->
+    <section id="auth-login" class="view active">
+        <div class="login-hero-container">
+            <!-- Left Side: Image -->
+            <div class="login-image-side">
+                <div class="login-overlay"></div>
+                <div class="login-brand-text">
+                    <h2>LuxeCurve</h2>
+                    <p>Elegance Redefined.</p>
+                </div>
+            </div>
+            <!-- Right Side: Form -->
+            <div class="login-form-side">
+                <div class="glass-auth-card">
+                    <div class="text-center" style="margin-bottom: 40px;">
+                        <img src="resources/logo.png" alt="LuxeCurve Logo" style="height: 60px; margin-bottom: 20px;">
+                        <h3 class="auth-title">Welcome Back</h3>
+                        <p class="auth-subtitle">Sign in to continue your curated journey.</p>
+                    </div>
+                    <!-- Login Form -->
+                    <form onsubmit="app.handleLoginSubmit(event)">
+                        <div class="input-group-luxe">
+                            <input type="email" id="login-email" placeholder=" " required>
+                            <label>Email Address</label>
+                            <i class="fa-regular fa-envelope input-icon"></i>
+                        </div>
+                        <div class="input-group-luxe">
+                            <input type="password" id="login-password" placeholder=" " required>
+                            <label>Password</label>
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <i class="fa-solid fa-eye password-toggle-luxe"
+                                onclick="app.togglePassword('login-password', this)"></i>
+                        </div>
+
+                        <div class="form-actions">
+                            <div class="checkbox-luxe">
+                                <input type="checkbox" id="login-remember">
+                                <label for="login-remember">Remember me</label>
+                            </div>
+                            <a href="#" class="forgot-link">Forgot Password?</a>
+                        </div>
+
+                        <button type="submit" id="login-btn" class="btn-luxe-primary">
+                            <span>Sign In</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </form>
+
+                    <div class="auth-footer">
+                        <p>New to LuxeCurve? <a href="#" onclick="app.navigate('signup')">Create an Account</a></p>
+                        <a href="#" onclick="app.navigate('home')" class="skip-link">Skip & Browse Collection</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AUTH: SIGNUP SECTION -->
+    <section id="auth-signup" class="view hidden">
+        <div class="container" style="max-width: 500px; margin-top: 50px; margin-bottom: 80px;">
+            <div class="auth-card">
+                <div class="text-center" style="margin-bottom: 30px;">
+                    <h3>Create Account</h3>
+                    <p style="color: #666;">Join the LuxeCurve family</p>
+                </div>
+                <!-- Signup Form -->
+                <form onsubmit="app.handleSignupSubmit(event)">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="signup-name" placeholder="John Doe" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="signup-email" placeholder="you@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="signup-password" placeholder="••••••••" required>
+                    </div>
+                    <div class="form-group">
+                        <p style="font-size: 0.8rem; color: #888;">By creating an account, you agree to our Terms &
+                            Conditions.</p>
+                    </div>
+                    <button type="submit" id="signup-btn" class="btn btn-block btn-primary">Create Account</button>
+                </form>
+                <p class="auth-switch text-center">
+                    Already have an account? <a href="#" onclick="app.navigate('login')">Login here</a>
+                </p>
+                <div class="text-center" style="margin-top:20px;">
+                    <a href="#" onclick="app.navigate('home')"
+                        style="color:#999; text-decoration:none; font-size:0.9rem;">← Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="js/payments.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/visuals.js"></script>
+</body>
+
+</html>
