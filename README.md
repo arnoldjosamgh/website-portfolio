@@ -33,14 +33,23 @@ A modern, responsive e-commerce website for a premium fashion brand. Built with 
     ```
 5.  **View Website**: Open `http://localhost:3000` in your browser.
 
+## Hosting (Replit) - Recommended for Full Stack
+
+**Replit** is excellent for hosting both the frontend and backend for free, and it keeps your database files safe.
+
+1.  Go to [replit.com](https://replit.com).
+2.  Click **"Create Repl"** -> **"Import from GitHub"**.
+3.  Paste this repo URL: `https://github.com/arnoldjosamgh/website-portfolio`
+4.  Replit will detect Node.js. Click **"Run"**.
+5.  Your site will be live in the preview window (and you get a public URL).
+
 ## Hosting (Glitch)
 
-This project works great on **Glitch**, which supports the database files (CSV) and Node.js for free.
+Alternative free host (also good for Node.js):
 
 1.  Go to [glitch.com](https://glitch.com).
 2.  Click **"New Project"** -> **"Import from GitHub"**.
-3.  Paste the URL of this repository:
-    `https://github.com/arnoldjosamgh/website-portfolio`
+3.  Paste the URL: `https://github.com/arnoldjosamgh/website-portfolio`
 4.  Glitch will install and run the server automatically.
 5.  Click **"Share"** -> **"Live Site"** to get your link!
 
