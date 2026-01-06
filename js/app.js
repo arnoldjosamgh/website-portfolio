@@ -17,27 +17,8 @@ const products = [
     { id: 105, category: 'women', subCategory: 'pants', title: 'High Waist Trousers', price: 3500, image: 'https://images.unsplash.com/photo-1509551388413-e18d0ac5d495?q=80&w=1935&auto=format&fit=crop' },
     { id: 106, category: 'women', subCategory: 'pants', title: 'Palazzo Pants', price: 4200, image: 'https://images.unsplash.com/photo-1584273143981-41c073dfe8f8?q=80&w=1770&auto=format&fit=crop' },
 
-    // MEN - SUITS/SHIRTS
-    { id: 5, category: 'men', subCategory: 'shirts', title: 'Midnight Tuxedo', price: 18000, image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?q=80&w=1780&auto=format&fit=crop' },
-    { id: 6, category: 'men', subCategory: 'shirts', title: 'Italian Linen Suit', price: 15500, image: 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?q=80&w=1780&auto=format&fit=crop' },
-    { id: 201, category: 'men', subCategory: 'shirts', title: 'Crisp White Shirt', price: 3500, image: 'https://images.unsplash.com/photo-1620012253295-c15cc3fe5d3d?q=80&w=1965&auto=format&fit=crop' },
-    { id: 202, category: 'men', subCategory: 'shirts', title: 'Black Polo', price: 2500, image: 'https://images.unsplash.com/photo-1617137968427-85924c809a10?q=80&w=1974&auto=format&fit=crop' },
-    { id: 203, category: 'men', subCategory: 'shirts', title: 'Navy Blazer', price: 10500, image: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=2071&auto=format&fit=crop' },
-
-    // MEN - SHOES
-    { id: 7, category: 'men', subCategory: 'shoes', title: 'Oxford Leather Shoe', price: 7500, image: 'https://images.unsplash.com/photo-1614252235316-06f87747b4d4?q=80&w=1887&auto=format&fit=crop' },
-    { id: 204, category: 'men', subCategory: 'shoes', title: 'Brown Loafers', price: 6800, image: 'https://images.unsplash.com/photo-1533867617858-e7b97e060509?q=80&w=2069&auto=format&fit=crop' },
-    { id: 205, category: 'men', subCategory: 'shoes', title: 'Chelsea Boots', price: 8500, image: 'https://images.unsplash.com/photo-1638247025967-b4e38f787b76?q=80&w=1935&auto=format&fit=crop' },
-
-    // MEN - PANTS
-    { id: 8, category: 'men', subCategory: 'pants', title: 'Safari Casual Set', price: 6500, image: 'https://images.unsplash.com/photo-1516257984369-450f138563d4?q=80&w=1883&auto=format&fit=crop' },
-    { id: 206, category: 'men', subCategory: 'pants', title: 'Chino Trousers', price: 3200, image: 'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?q=80&w=1887&auto=format&fit=crop' },
-    { id: 207, category: 'men', subCategory: 'pants', title: 'Formal Slacks', price: 4000, image: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?q=80&w=1897&auto=format&fit=crop' },
-
-    // Fillers to reach > 12 pages logic
-    { id: 301, category: 'men', subCategory: 'shirts', title: 'Printed Resort Shirt', price: 3000, image: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?q=80&w=1888&auto=format&fit=crop' },
-    { id: 302, category: 'woman', subCategory: 'pants', title: 'Denim Jeans', price: 3500, image: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=1887&auto=format&fit=crop' },
-    { id: 303, category: 'men', subCategory: 'shoes', title: 'Sport Sneakers', price: 5500, image: 'https://images.unsplash.com/photo-1527010154944-f2241763d806?q=80&w=1888&auto=format&fit=crop' }
+    // Fillers
+    { id: 302, category: 'woman', subCategory: 'pants', title: 'Denim Jeans', price: 3500, image: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=1887&auto=format&fit=crop' }
 ];
 // Local Resource Mapping
 // Ensure you have photos named photo_1.jpg, photo_2.jpg, etc. in resources folder
@@ -75,8 +56,8 @@ const app = {
             app.checkSession();
             app.navigate('home');
         } else {
-            // Ensure we are on login if not logged in (explicitly, though HTML default handles it)
-            // app.navigate('login'); 
+            // Default to login page
+            app.navigate('login');
         }
     },
 
