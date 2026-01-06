@@ -37,10 +37,11 @@ A modern, responsive e-commerce website for a premium fashion brand. Built with 
 
 This project is configured for free hosting on [Render](https://render.com).
 
-1.  Connect your GitHub repository to Render.
-2.  Create a **Web Service**.
-3.  Render will auto-detect Node.js.
-4.  Deploy!
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/arnoldjosamgh/website-portfolio)
+
+1.  Click the button above.
+2.  Sign in with GitHub.
+3.  Click "Create Web Service".
 
 ## Admin Access
 - **URL**: `/admin.html`
