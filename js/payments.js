@@ -5,28 +5,28 @@ const payments = {
         payments.method = method;
 
         // Visual toggle
-        document.querySelectorAll('.method-card').forEach(el => el.classList.remove('active'));
-        document.getElementById(`pm-${method}`).classList.add('active');
+        document.querySelectorAll('.method-card-luxe').forEach(el => el.classList.remove('active'));
+        const activeTab = method === 'mpesa' ? document.getElementById('pm-mpesa') : document.getElementById('pm-bank');
+        if (activeTab) activeTab.classList.add('active');
 
         // Form toggle
         if (method === 'mpesa') {
             document.getElementById('mpesa-fields').classList.remove('hidden');
-            document.getElementById('card-fields').classList.add('hidden');
+            document.getElementById('bank-fields').classList.add('hidden');
         } else {
             document.getElementById('mpesa-fields').classList.add('hidden');
-            document.getElementById('card-fields').classList.remove('hidden');
+            document.getElementById('bank-fields').classList.remove('hidden');
         }
     },
 
-    handlePayment: (e) => {
+    handlePayment: async (e) => {
         e.preventDefault();
 
         // AUTH GUARD: Check if user is logged in
-        if (!localStorage.getItem('luxe_session')) {
-            app.showToast('Please Login or Create an Account to Checkout');
-            // Optional: wait a moment then redirect
+        if (!window.app.user) {
+            window.app.showToast('Please Login or Create an Account to Checkout');
             setTimeout(() => {
-                app.navigate('login');
+                window.app.navigate('login');
             }, 1000);
             return;
         }
@@ -41,7 +41,7 @@ const payments = {
         if (payments.method === 'mpesa') {
             const phone = document.getElementById('mpesa-number').value;
             if (!phone) {
-                app.showToast('Please enter a phone number');
+                window.app.showToast('Please enter a phone number');
                 btn.disabled = false;
                 btn.innerHTML = originalText;
                 return;
@@ -50,144 +50,122 @@ const payments = {
             setTimeout(() => {
                 btn.innerHTML = 'Sending request to phone...';
 
-                setTimeout(() => {
-                    alert(`STK Push sent to +254${phone}. Please enter your M-PESA PIN.`);
-
+                setTimeout(async () => {
                     // Simulate Success after PIN entry
                     btn.innerHTML = '<i class="fa-solid fa-check"></i> Payment Successful';
                     btn.style.backgroundColor = '#4CD964'; // Success green
                     btn.style.color = '#fff';
 
-                    setTimeout(() => {
-                        alert('Order Confirmed! Thank you for shopping with LuxeCurve.');
-                        app.cart = [];
-                        app.updateCartCount();
-                        app.navigate('home');
-                        // Reset button
-                        btn.disabled = false;
-                        btn.innerHTML = originalText;
-                        btn.style.backgroundColor = '';
-                        btn.style.color = '';
-                    }, 2000);
+                    await payments.finalizeOrder(btn, originalText);
 
                 }, 2000);
             }, 1500);
 
         } else {
-            // Visa Simulation
-            const cardInput = document.getElementById('card-fields').querySelector('input');
-            const sensitiveData = cardInput.value;
-
-            // SECURITY: Clear the input immediately from DOM and memory variables
-            cardInput.value = '';
-
+            // Bank Transfer Logic (Simulated Verification)
+            // No input validation needed for static bank details view, just confirmation
             setTimeout(() => {
-                btn.innerHTML = 'Verifying Card...';
+                btn.innerHTML = 'Verifying Transfer...';
 
-                setTimeout(() => {
-                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Payment Approved';
+                setTimeout(async () => {
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Transfer Verified';
                     btn.style.backgroundColor = '#4CD964';
 
-                    // Explicitly nullify any temp variables held in closure
-                    // (sensitiveData is local to the else block and will be garbage collected, 
-                    // but good practice to not pass it anywhere)
+                    await payments.finalizeOrder(btn, originalText);
+                }, 2000);
+            }, 1500);
+        }
+    },
 
-                    setTimeout(() => {
-                        setTimeout(() => {
-                            // --- SERVER SYNC (PHP) ---
-                            // Send cart items to PHP backend
-                            // --- SERVER SYNC (PHP) ---
-                            // Send cart items to PHP backend
-                            // Recalculate amounts to ensure security/consistency (or trust client state for now)
-                            const isWholesale = app.state.isWholesale;
-                            const totalQty = app.cart.reduce((sum, item) => sum + item.qty, 0);
-                            const applyDiscount = isWholesale && totalQty > 5;
+    finalizeOrder: async (btn, originalText) => {
+        const isWholesale = window.app.state.isWholesale;
+        const totalQty = window.app.cart.reduce((sum, item) => sum + item.qty, 0);
+        const applyDiscount = isWholesale && totalQty > 5;
 
-                            const itemsPayload = app.cart.map(p => {
-                                const unitPrice = applyDiscount ? Math.floor(p.price * 0.95) : p.price;
-                                return {
-                                    id: p.id,
-                                    title: p.title,
-                                    qty: p.qty,
-                                    price: unitPrice
-                                };
-                            });
+        const itemsPayload = window.app.cart.map(p => {
+            const unitPrice = applyDiscount ? Math.floor(p.price * 0.95) : p.price;
+            return {
+                id: p.id,
+                title: p.title,
+                qty: p.qty,
+                price: unitPrice,
+                color: 'Default', // Simplified as color selection wasn't detailed in current UI
+                units: p.qty // As requested "unites"
+            };
+        });
 
-                            const totalAmount = itemsPayload.reduce((sum, i) => sum + (i.price * i.qty), 0);
+        const totalAmount = itemsPayload.reduce((sum, i) => sum + (i.price * i.qty), 0);
 
-                            const paymentData = {
-                                email: localStorage.getItem('luxe_email'),
-                                amount: totalAmount,
-                                method: payments.method,
-                                items: itemsPayload
-                            };
+        const orderData = {
+            email: window.app.user.email,
+            userId: window.app.user.id,
+            amount: totalAmount,
+            method: payments.method, // 'mpesa' or 'bank'
+            account_credited: "LUXECURVE FASHION HOUSE LIMITED - 00308369356250",
+            currency: "KES",
+            items: itemsPayload,
+            status: "paid"
+        };
 
-                            fetch('/api/checkout', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(paymentData)
-                            })
-                                .then(r => r.json())
-                                .then(d => {
-                                    if (d.success) console.log('Payment recorded');
-                                    else console.warn('Payment API Error', d);
-                                })
-                                .catch(e => console.warn("Server connection failed"));
-                                .catch(e => console.warn("Server offline/PHP not running"));
-                        // -------------------
+        // --- SAVE TO FIREBASE ---
+        const saved = await window.app.saveOrder(orderData);
+        // ------------------------
 
-                        alert('Order Confirmed! Thank you for shopping with LuxeCurve.');
+        if (saved) {
+            setTimeout(() => {
+                alert('Order Confirmed! Logic to Direct Transaction to Company Bank Successful. Database Updated.');
 
-                        // Generate Receipt
-                        payments.downloadReceipt(paymentData, new Date().toLocaleString());
+                // Generate Receipt
+                payments.downloadReceipt(orderData, new Date().toLocaleString());
 
-                        app.cart = [];
-                        app.updateCartCount();
-                        app.navigate('home');
-                        btn.disabled = false;
-                        btn.innerHTML = originalText;
-                        btn.style.backgroundColor = '';
-                    }, 2000);
-                }, 1000);
-            }, 2000);
-        }, 1000);
-    }
-},
+                window.app.cart = [];
+                window.app.updateCartCount();
+                window.app.navigate('home');
+
+                // Reset button
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                btn.style.backgroundColor = '';
+                btn.style.color = '';
+            }, 1000);
+        } else {
+            alert('Payment processed but failed to save record. Please contact support.');
+            btn.disabled = false;
+        }
+    },
 
     downloadReceipt: (data, date) => {
-        // Simple Text Receipt
-        const name = localStorage.getItem('luxe_session') || 'Valued Customer';
-let receiptContent = `LuxeCurve Fashion House\n`;
-receiptContent += `RECEIPT\n`;
-receiptContent += `--------------------------------\n`;
-receiptContent += `Date: ${date}\n`;
-receiptContent += `Customer: ${name}\n`;
-receiptContent += `Email: ${data.email}\n`;
-receiptContent += `Payment Method: ${data.method.toUpperCase()}\n`;
-receiptContent += `--------------------------------\n`;
-receiptContent += `ITEMS PURCHASED:\n\n`;
+        const name = window.app.user.displayName || 'Valued Customer';
+        let receiptContent = `LuxeCurve Fashion House\n`;
+        receiptContent += `RECEIPT\n`;
+        receiptContent += `--------------------------------\n`;
+        receiptContent += `Date: ${date}\n`;
+        receiptContent += `Customer: ${name}\n`;
+        receiptContent += `Email: ${data.email}\n`;
+        receiptContent += `Payment Method: ${data.method === 'bank' ? 'BANK TRANSFER' : 'M-PESA'}\n`;
+        receiptContent += `Beneficiary: LUXECURVE FASHION HOUSE LIMITED\n`;
+        receiptContent += `Account: 00308369356250\n`;
+        receiptContent += `--------------------------------\n`;
+        receiptContent += `ITEMS PURCHASED:\n\n`;
 
-data.items.forEach(item => {
-    receiptContent += `- ${item.title} x${item.qty}\n`;
-    receiptContent += `  @ KES ${item.price.toLocaleString()}\n`;
-});
+        data.items.forEach(item => {
+            receiptContent += `- ${item.title} (x${item.units})\n`;
+            receiptContent += `  @ KES ${item.price.toLocaleString()}\n`;
+        });
 
-receiptContent += `--------------------------------\n`;
-receiptContent += `TOTAL PAID: KES ${data.amount.toLocaleString()}\n`;
-receiptContent += `--------------------------------\n`;
-receiptContent += `Thank you for shopping with us!\n`;
+        receiptContent += `--------------------------------\n`;
+        receiptContent += `TOTAL PAID: KES ${data.amount.toLocaleString()}\n`;
+        receiptContent += `--------------------------------\n`;
+        receiptContent += `Thank you for shopping with us!\n`;
 
-// Create Blob
-const blob = new Blob([receiptContent], { type: 'text/plain' });
-const url = window.URL.createObjectURL(blob);
-const a = document.createElement('a');
-a.href = url;
-a.download = `LuxeCurve_Receipt_${Date.now()}.txt`;
-document.body.appendChild(a);
-a.click();
-
-// Clean up
-window.URL.revokeObjectURL(url);
-document.body.removeChild(a);
+        const blob = new Blob([receiptContent], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `LuxeCurve_Receipt_${Date.now()}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
     }
 };

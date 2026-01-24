@@ -123,9 +123,13 @@
         <div class="admin-header">
             <div>
                 <h1>Admin Dashboard</h1>
-                <p>Real-time shop overview</p>
+                <p>Real-time shop overview & Inventory control</p>
             </div>
-            <button class="logout-btn" onclick="logout()">Logout</button>
+            <div>
+                <button class="logout-btn" style="margin-right: 10px; border-color: #d4af37; color: #d4af37;"
+                    onclick="seedDatabase()">Initial Setup: Seed DB</button>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
         </div>
 
         <div class="stats-grid">
@@ -133,7 +137,7 @@
                 <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
                 <div class="stat-info">
                     <h3 id="total-users">-</h3>
-                    <p>Registered Users</p>
+                    <p>Users (Restricted)</p>
                 </div>
             </div>
             <div class="stat-card">
@@ -143,68 +147,239 @@
                     <p>Total Orders</p>
                 </div>
             </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-shirt"></i></div>
+                <div class="stat-info">
+                    <h3 id="total-products">-</h3>
+                    <p>Active Products</p>
+                </div>
+            </div>
         </div>
 
-        <div class="data-table-container">
-            <h3 style="margin-bottom: 20px;">Recent Registrations</h3>
+        <!-- TABS -->
+        <div style="margin-bottom: 20px;">
+            <button onclick="switchTab('orders')" class="logout-btn"
+                style="background:var(--gold); color:#fff; border:none;">Orders</button>
+            <button onclick="switchTab('inventory')" class="logout-btn"
+                style="background:#ddd; color:#333; border:none;">Inventory</button>
+        </div>
+
+        <!-- ORDERS VIEW -->
+        <div id="view-orders" class="data-table-container">
+            <h3 style="margin-bottom: 20px;">Recent Orders</h3>
             <table class="data-table">
                 <thead>
                     <tr>
                         <th>Date</th>
-                        <th>Name</th>
-                        <th>Email</th>
+                        <th>Customer Email</th>
+                        <th>Amount</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody id="users-table-body">
                     <tr>
-                        <td colspan="3">Loading data...</td>
+                        <td colspan="4">Loading data...</td>
                     </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- INVENTORY VIEW -->
+        <div id="view-inventory" class="data-table-container hidden" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3>Product Inventory</h3>
+                <button class="logout-btn" style="background:var(--black); color:#fff; border:none;"
+                    onclick="toggleAddForm()">+ Add New Product</button>
+            </div>
+
+            <!-- Add Product Form -->
+            <div id="add-product-form"
+                style="background:#f1f1f1; padding:20px; border-radius:8px; margin-bottom:20px; display:none;">
+                <h4>Add New Product</h4>
+                <form onsubmit="addProduct(event)"
+                    style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:15px;">
+                    <input type="text" id="p-title" placeholder="Product Title" required style="padding:10px;">
+                    <input type="number" id="p-price" placeholder="Price (KES)" required style="padding:10px;">
+                    <select id="p-cat" required style="padding:10px;">
+                        <option value="women">Women</option>
+                        <option value="men">Men</option>
+                    </select>
+                    <select id="p-sub" required style="padding:10px;">
+                        <option value="shirts">Shirts</option>
+                        <option value="pants">Pants</option>
+                        <option value="shoes">Shoes</option>
+                    </select>
+                    <input type="text" id="p-img" placeholder="Image URL (Unsplash or Local)" required
+                        style="padding:10px; grid-column:span 2;">
+                    <button type="submit" class="logout-btn"
+                        style="background:var(--gold); color:#fff; border:none; grid-column:span 2;">Save
+                        Product</button>
+                </form>
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="inventory-table-body">
+                    <!-- Products -->
                 </tbody>
             </table>
         </div>
     </div>
 
-    <script>
-        // Simple Admin Auth Check (Demo Security)
-        const user = localStorage.getItem('luxe_email');
-        if (user !== 'admin@luxecurve.com') {
+    <!-- Supabase Config -->
+    <script type="module">
+        import { supabase } from './js/supabase-config.js';
+
+        // Admin Emails
+        const ADMIN_EMAILS = ['admin@luxecurve.com', 'luxecurvefashionhouse@gmail.com'];
+        // Default Data for seeding
+        const DEFAULT_PRODUCTS = [
+            { category: 'women', sub_category: 'shirts', title: 'Silk Emerald Gown', price: 12500, image_url: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=1983&auto=format&fit=crop' },
+            { category: 'women', sub_category: 'shirts', title: 'Royal Blue Cocktail', price: 8900, image_url: 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?q=80&w=1924&auto=format&fit=crop' },
+            { category: 'women', sub_category: 'shirts', title: 'Crimson Velvet Blazer', price: 9500, image_url: 'https://images.unsplash.com/photo-1550614000-4b9519e02a48?q=80&w=1888&auto=format&fit=crop' },
+            { category: 'women', sub_category: 'shirts', title: 'White Linen Blouse', price: 4500, image_url: 'https://images.unsplash.com/photo-1534120247760-c44c3e4a62f1?q=80&w=2098&auto=format&fit=crop' },
+            { category: 'women', sub_category: 'shirts', title: 'Satin Evening Top', price: 5500, image_url: 'https://images.unsplash.com/photo-1618244972963-dbee1a7edc95?q=80&w=1887&auto=format&fit=crop' },
+            { category: 'women', sub_category: 'shoes', title: 'Gold Plated Heel', price: 4500, image_url: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=2080&auto=format&fit=crop' },
+            { category: 'women', sub_category: 'shoes', title: 'Red Stiletto', price: 6500, image_url: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=2080&auto=format&fit=crop' },
+            { category: 'women', sub_category: 'shoes', title: 'Nude Pump', price: 5000, image_url: 'https://images.unsplash.com/photo-1515347619252-60a6bf4fffce?q=80&w=2080&auto=format&fit=crop' },
+            { category: 'women', sub_category: 'pants', title: 'High Waist Trousers', price: 3500, image_url: 'https://images.unsplash.com/photo-1509551388413-e18d0ac5d495?q=80&w=1935&auto=format&fit=crop' },
+            { category: 'women', sub_category: 'pants', title: 'Palazzo Pants', price: 4200, image_url: 'https://images.unsplash.com/photo-1584273143981-41c073dfe8f8?q=80&w=1770&auto=format&fit=crop' },
+            { category: 'woman', sub_category: 'pants', title: 'Denim Jeans', price: 3500, image_url: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=1887&auto=format&fit=crop' }
+        ];
+
+        async function checkAuth() {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (!session || !ADMIN_EMAILS.includes(session.user.email)) {
+                alert('Access Denied. Admin privileges required.');
+                window.location.href = 'index.html';
+                return;
+            }
+            fetchStats();
+        }
+
+        window.logout = async () => {
+            await supabase.auth.signOut();
             window.location.href = 'index.html';
         }
 
-        function logout() {
-            localStorage.removeItem('luxe_session');
-            localStorage.removeItem('luxe_email');
-            window.location.href = 'index.html';
+        window.switchTab = (tab) => {
+            document.getElementById('view-orders').style.display = tab === 'orders' ? 'block' : 'none';
+            document.getElementById('view-inventory').style.display = tab === 'inventory' ? 'block' : 'none';
+            if (tab === 'inventory') fetchInventory();
+        }
+
+        window.toggleAddForm = () => {
+            const form = document.getElementById('add-product-form');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        window.seedDatabase = async () => {
+            if (!confirm('This will insert default products smoothly into the database. Proceed?')) return;
+
+            const { error } = await supabase.from('products').insert(DEFAULT_PRODUCTS);
+            if (error) alert('Error seeding: ' + error.message);
+            else {
+                alert('Database populated successfully!');
+                fetchInventory();
+                fetchStats();
+            }
+        }
+
+        window.addProduct = async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('p-title').value;
+            const price = document.getElementById('p-price').value;
+            const category = document.getElementById('p-cat').value;
+            const subCategory = document.getElementById('p-sub').value;
+            const image = document.getElementById('p-img').value;
+
+            const { error } = await supabase.from('products').insert([{
+                title, price, category, sub_category: subCategory, image_url: image
+            }]);
+
+            if (error) alert('Error: ' + error.message);
+            else {
+                alert('Product Added!');
+                e.target.reset();
+                fetchInventory();
+                fetchStats(); // Update count
+            }
+        }
+
+        window.deleteProduct = async (id) => {
+            if (!confirm('Permanently delete this product?')) return;
+            const { error } = await supabase.from('products').delete().eq('id', id);
+            if (error) alert('Error: ' + error.message);
+            else fetchInventory();
+        }
+
+        async function fetchInventory() {
+            const { data: products, error } = await supabase.from('products').select('*').order('id', { ascending: false });
+            if (error) { console.error(error); return; }
+
+            const tbody = document.getElementById('inventory-table-body');
+            tbody.innerHTML = '';
+            products.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><img src="${p.image_url}" style="width:50px; height:50px; object-fit:cover; border-radius:4px;"></td>
+                    <td>${p.title}</td>
+                    <td>${p.category} / ${p.sub_category}</td>
+                    <td>KES ${p.price}</td>
+                    <td><button onclick="deleteProduct(${p.id})" style="color:red; border:1px solid red; background:transparent; padding:4px 8px; cursor:pointer;">Delete</button></td>
+                 `;
+                tbody.appendChild(tr);
+            });
         }
 
         async function fetchStats() {
             try {
-                const response = await fetch('/api/admin/stats');
-                const data = await response.json();
+                // 1. Get Total Orders
+                const { count: orderCount } = await supabase.from('orders').select('*', { count: 'exact', head: true });
+                document.getElementById('total-orders').innerText = orderCount || 0;
 
-                if (data.success) {
-                    document.getElementById('total-users').innerText = data.userCount;
-                    document.getElementById('total-orders').innerText = data.orderCount; // Mock for now
+                // 2. Get Total Products
+                const { count: prodCount } = await supabase.from('products').select('*', { count: 'exact', head: true });
+                document.getElementById('total-products').innerText = prodCount || 0;
 
-                    const tbody = document.getElementById('users-table-body');
-                    tbody.innerHTML = '';
+                // 3. Fake Users count
+                document.getElementById('total-users').innerText = 'Hidden';
 
-                    data.users.forEach(u => {
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td>${new Date(u.date).toLocaleDateString()}</td>
-                            <td>${u.name}</td>
-                            <td>${u.email}</td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
+                // 4. Get Recent Orders
+                const { data: orders } = await supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(10);
+                const tbody = document.getElementById('users-table-body');
+                tbody.innerHTML = '';
+                if (!orders || orders.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4">No orders found.</td></tr>';
+                    return;
                 }
+                orders.forEach(order => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${new Date(order.created_at).toLocaleDateString()}</td>
+                        <td>${order.email || 'Unknown'}</td>
+                        <td>KES ${order.amount ? order.amount.toLocaleString() : '0'}</td>
+                        <td><span style="padding: 4px 8px; background: #e0e0e0; border-radius: 4px; font-size: 0.8rem;">${order.status || 'Pending'}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
             } catch (err) {
-                console.error(err);
+                console.error('Admin Error:', err);
             }
         }
 
-        fetchStats();
+        // Run Check
+        checkAuth();
     </script>
 </body>
 
